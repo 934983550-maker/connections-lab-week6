@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Aircraft Database</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: Arial, sans-serif;
+      background: #f2f5f9;
+      color: #172b4d;
+    }
+
+    header {
+      max-width: 1100px;
+      margin: 0 auto 35px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #d5deea;
+    }
+
+    .label {
+      color: #3975c6;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 3px;
+    }
+
+    h1 {
+      margin: 12px 0;
+      font-size: 42px;
+    }
+
+    .intro {
+      color: #63738a;
+      line-height: 1.6;
+    }
+
+    #status {
+      max-width: 1100px;
+      margin: 0 auto 20px;
+      color: #63738a;
+    }
+
+    #aircraft-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+    }
+
+    .aircraft-card {
+      background: white;
+      padding: 22px;
+      border: 1px solid #dce4ee;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(20, 45, 80, 0.05);
+    }
+
+    .number {
+      color: #3975c6;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .aircraft-card h2 {
+      font-size: 21px;
+      line-height: 1.35;
+      margin: 14px 0 8px;
+    }
+
+    .manufacturer {
+      color: #63738a;
+      margin-bottom: 18px;
+    }
+
+    .detail {
+      padding: 10px 0;
+      border-top: 1px solid #edf0f5;
+      font-size: 14px;
+    }
+
+    .detail span {
+      display: block;
+      color: #7b8798;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .api-link {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 18px;
+      background: #e4edfa;
+      border-radius: 8px;
+      line-height: 1.8;
+    }
+
+    a {
+      color: #245eb5;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 22px;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <p class="label">AVIATION DATABASE / 001</p>
+    <h1>Aircraft Database</h1>
+    <p class="intro">
+      Explore 10 aircraft models, from regional jets to iconic
+      supersonic passenger aircraft.
+    </p>
+  </header>
+
+  <p id="status">Loading aircraft data...</p>
+
+  <main id="aircraft-container"></main>
+
+  <section class="api-link">
+    <strong>Explore the data</strong><br>
+    <a href="/data" target="_blank">View all aircraft in JSON</a>
+    <p>Try /data/1 to view one aircraft.</p>
+  </section>
+
+  <script>
+    async function loadAircraft() {
+      const status = document.getElementById("status");
+      const container = document.getElementById("aircraft-container");
+
+      try {
+        const response = await fetch("/data");
+
+        if (!response.ok) {
+          throw new Error("Could not load aircraft data");
+        }
+
+        const aircraft = await response.json();
+
+        aircraft.forEach((plane) => {
+          const card = document.createElement("article");
+          card.className = "aircraft-card";
+
+          const number = document.createElement("p");
+          number.className = "number";
+          number.textContent = "AIRCRAFT / " + String(plane.id).padStart(2, "0");
+
+          const name = document.createElement("h2");
+          name.textContent = plane.name;
+
+          const manufacturer = document.createElement("p");
+          manufacturer.className = "manufacturer";
+          manufacturer.textContent = plane.manufacturer;
+
+          const year = document.createElement("div");
+          year.className = "detail";
+          year.innerHTML = "<span>FIRST FLIGHT</span>";
+          const yearValue = document.createElement("strong");
+          yearValue.textContent = plane.firstFlight;
+          year.appendChild(yearValue);
+
+          const type = document.createElement("div");
+          type.className = "detail";
+          type.innerHTML = "<span>AIRCRAFT TYPE</span>";
+          const typeValue = document.createElement("strong");
+          typeValue.textContent = plane.type;
+          type.appendChild(typeValue);
+
+          const seats = document.createElement("div");
+          seats.className = "detail";
+          seats.innerHTML = "<span>SEATING CAPACITY</span>";
+          const seatsValue = document.createElement("strong");
+          seatsValue.textContent = plane.seats + " seats";
+          seats.appendChild(seatsValue);
+
+          const range = document.createElement("div");
+          range.className = "detail";
+          range.innerHTML = "<span>APPROX. RANGE</span>";
+          const rangeValue = document.createElement("strong");
+          rangeValue.textContent = plane.range.toLocaleString() + " km";
+          range.appendChild(rangeValue);
+
+          const link = document.createElement("p");
+          const details = document.createElement("a");
+          details.href = "/data/" + plane.slug;
+          details.textContent = "View JSON details";
+          link.appendChild(details);
+
+          card.append(
+            number,
+            name,
+            manufacturer,
+            year,
+            type,
+            seats,
+            range,
+            link
+          );
+
+          container.appendChild(card);
+        });
+
+        status.textContent =
+          aircraft.length + " aircraft models in the database";
+      } catch (error) {
+        status.textContent =
+          "Could not load aircraft data. Please check the server.";
+        console.error(error);
+      }
+    }
+
+    loadAircraft();
+  </script>
+</body>
+</html>
